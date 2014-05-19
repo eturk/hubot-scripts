@@ -69,7 +69,7 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
 module.exports = (robot) ->
   if process.env.HUBOT_ROLLCALL_WEBHOOK
 
-    robot.hear /^rollcall\s+i\s+am\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s+i\s+am\s+(.*)$/i, (msg) ->
       rollcall_email = msg.match[1]
       msg.message.user.rollcallAccount = rollcall_email
       send_command_to_rollcall msg, "map", rollcall_email, (err, response) ->
@@ -77,7 +77,7 @@ module.exports = (robot) ->
         msg.reply "You are #{rollcall_email} on Rollcall."
 
 
-    robot.hear /^rollcall\s+search\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s+search\s+(.*)$/i, (msg) ->
       rollcall_body = msg.match[1]
       send_command_to_rollcall msg, "search", rollcall_body, (err, response) ->
         return msg.send "Error searching Rollcall: #{err.message}" if err?
@@ -94,19 +94,19 @@ module.exports = (robot) ->
         msg.reply output
 
 
-    robot.hear /^rollcall\s+working\s+on\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s+working\s+on\s+(.*)$/i, (msg) ->
       rollcall_body = msg.match[1]
       send_command_to_rollcall msg, "post", rollcall_body, (err, response) ->
         return msg.send "Error updating Rollcall: #{err.message}" if err?
         msg.reply "✓"
 
-    robot.hear /^rollcall\s+post\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s+post\s+(.*)$/i, (msg) ->
       rollcall_body = msg.match[1]
       send_command_to_rollcall msg, "post", rollcall_body, (err, response) ->
         return msg.send "Error updating Rollcall: #{err.message}" if err?
         msg.reply "✓"
 
-    robot.hear /^rollcall\s+who\s+am\s+i\s*$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s+who\s+am\s+i\s*$/i, (msg) ->
       user = msg.message.user
       if user.rollcallAccount
         msg.reply "You are known as #{user.rollcallAccount} on Rollcall"
