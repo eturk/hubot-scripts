@@ -82,11 +82,11 @@ module.exports = (robot) ->
       send_command_to_rollcall msg, "search", rollcall_body, (err, response) ->
         return msg.send "Error searching Rollcall: #{err.message}" if err?
 
-        response = ""
+        output = ""
         for entity in response.organization.matching_entities
-          response += "#{entity.entity_key} - #{entity.name}\n"
+          output += "#{entity.entity_key} - #{entity.name}\n"
 
-        msg.send response
+        msg.send output
 
 
     robot.hear /^rollcall\s+working\s+on\s+(.*)$/i, (msg) ->
