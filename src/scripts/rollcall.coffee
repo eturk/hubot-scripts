@@ -21,6 +21,8 @@
 #   sujal
 
 util = require('util')
+url = require('url')
+querystring = require('querystring')
 
 send_command_to_rollcall = (msg, command, matched_data, callback) ->
 
@@ -115,7 +117,9 @@ module.exports = (robot) ->
 
     robot.router.post "/hubot/rollcall", (req, res) ->
 
-      room=req.params.room
+      query = querystring.parse url.parse(req.url).query
+
+      room=query.room
 
       res.end JSON.stringify {
         received: true #some client have problems with and empty response
