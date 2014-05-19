@@ -89,7 +89,7 @@ module.exports = (robot) ->
         else
           output = "Found #{result_count} results for #{rollcall_body}:\n\n"
           for entity in response.organization.matching_entities
-            output += "#{entity.entity_key} - #{entity.name}\n"
+            output += "#{entity.name}\n"
 
         msg.reply output
 
