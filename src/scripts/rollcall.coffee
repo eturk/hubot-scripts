@@ -83,7 +83,7 @@ module.exports = (robot) ->
         return msg.send "Error searching Rollcall: #{err.message}" if err?
 
         output = null
-        result_count = response.organization?.matching_entities?.count || 0
+        result_count = response.organization?.matching_entities?.length || 0
         if (result_count == 0)
           output = "Found 0 results for #{rollcall_body}"
         else
