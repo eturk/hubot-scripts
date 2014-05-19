@@ -120,7 +120,7 @@ module.exports = (robot) ->
       }
 
       try
-        payload = JSON.parse req.body
+        payload = req.body
 
         robot.send "[#{payload.status.organization.domain}] #{payload.status.body} - #{payload.status.user.name}"
 
