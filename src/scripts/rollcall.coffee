@@ -115,17 +115,20 @@ module.exports = (robot) ->
 
     robot.router.post "/hubot/rollcall", (req, res) ->
 
+      room=req.params.room
+
       res.end JSON.stringify {
         received: true #some client have problems with and empty response
       }
 
       try
+
         payload = req.body
 
-        robot.send "[#{payload.status.organization.domain}] #{payload.status.body} - #{payload.status.user.name}"
+        robot.messageRoom room, "[#{payload.status.organization.domain}] #{payload.status.body} - #{payload.status.user.name}"
 
       catch error
-        console.log "rollcall hook error: #{error}. Payload: #{req.body.payload}"
+        console.log "rollcall hook error: #{error}. Payload: #{req.body}"
 
 
 
