@@ -14,6 +14,8 @@
 #   rollcall working on <status update> - update your status on Rollcall
 #   rollcall post <status update> - alternative syntax for posting a status update
 #
+# URL:
+#   POST /hubot/rollcall
 #
 # Author:
 #   sujal
