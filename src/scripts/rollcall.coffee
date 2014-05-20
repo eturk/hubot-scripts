@@ -44,7 +44,7 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
     remote_username: remote_username
   }
 
-  if (command != "map")
+  if (command != "map" or command != "unmap")
     post_body["body"] = matched_data
 
   # console.log post_body
@@ -59,6 +59,12 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
 
       switch res.statusCode
         when 200
+          switch command
+            when "map"
+              msg.message.user.rollcallAccount = matched_data
+            when "unmap"
+              msg.message.user.rollcallAccount = undefined
+
           return callback(null, r)
         when 404
           return callback(new Error("404 Received: #{r?.meta?.text}"), r)
@@ -72,26 +78,32 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
 module.exports = (robot) ->
   if process.env.HUBOT_ROLLCALL_WEBHOOK
 
-    robot.hear /^(?:@|\/)?rollcall:?\s*(who\s+am\s+i|i\s+am|search|working\s+on|post|forget\s+me)?\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s*(who\s+am|i\s+am|search|working\s+on|post|forget)?\s+(.*)$/i, (msg) ->
+      # console.log "user_command is #{user_command}"
+
       user_command = msg.match[1]
       command_data = msg.match[2]
 
-      actual_command = switch user_command.toLowerCase()
-        when /i\s+am/
-          "map'"
+      # console.log "user_command is #{user_command}"
+
+      actual_command = switch user_command.toLowerCase().replace(/\s+/g, " ")
+        when "i am"
+          "map"
         when "search"
           "search"
-        when /forget\s+me/
+        when "forget"
           "unmap"
-        when /who\s+am\s+i/
+        when "who am"
           user = msg.message.user
-          if user.rollcallAccount
+          if user.rollcallAccount?
             msg.reply "You are known as #{user.rollcallAccount} on Rollcall"
           else
             msg.reply "I don't know who you are. Tell rollcall who you are."
           null
         else # /working\s+on/, "post", no command all are POST ME! :)
           "post"
+
+      # console.log actual_command
 
       return unless actual_command?
 
@@ -100,7 +112,6 @@ module.exports = (robot) ->
 
         switch actual_command
           when "map"
-            msg.message.user.rollcallAccount = command_data
             msg.reply "You are #{command_data} on Rollcall."
           when "search"
             output = null
@@ -115,9 +126,7 @@ module.exports = (robot) ->
             msg.reply output
 
           when "unmap"
-            old_account = msg.message.user.rollcallAccount
-            msg.message.user.rollcallAccount = undefined
-            msg.reply "You are no longer mapped to #{old_account}."
+            msg.reply "You're no longer mapped to a Rollcall account."
           when "post"
             msg.reply "✓"
 
