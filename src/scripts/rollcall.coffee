@@ -84,9 +84,11 @@ module.exports = (robot) ->
       user_command = msg.match[1]
       command_data = msg.match[2]
 
+      user_command = user_command.toLowerCase().replace(/\s+/g, " ") if user_command?
+
       # console.log "user_command is #{user_command}"
 
-      actual_command = switch user_command.toLowerCase().replace(/\s+/g, " ")
+      actual_command = switch user_command
         when "i am"
           "map"
         when "search"
