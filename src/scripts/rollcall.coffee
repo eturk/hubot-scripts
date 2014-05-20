@@ -13,6 +13,7 @@
 #   rollcall search <entity search terms e.g. owner/project#term> - search for issuses or projects for use in your status update
 #   rollcall working on <status update> - update your status on Rollcall
 #   rollcall post <status update> - alternative syntax for posting a status update
+#   rollcall <status update> - alternative, simpler syntax for status updates
 #
 # URL:
 #   POST /hubot/rollcall
