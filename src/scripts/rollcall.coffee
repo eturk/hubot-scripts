@@ -119,9 +119,9 @@ module.exports = (robot) ->
             output = null
             result_count = response.organization?.matching_entities?.length || 0
             if (result_count == 0)
-              output = "Found 0 results for #{rollcall_body}"
+              output = "Found 0 results for #{command_data}"
             else
-              output = "Found #{result_count} results for #{rollcall_body}:\n\n"
+              output = "Found #{result_count} results for #{command_data}:\n\n"
               for entity in response.organization.matching_entities
                 output += "#{entity.name}\n"
 
