@@ -10,6 +10,8 @@
 #
 # Commands:
 #   rollcall i am <rollcall email address> - map your user to your Rollcall account (required!)
+#   rollcall who am i - see if Rollcall knows who you are (only checks Hubot, not the server)
+#   rollcall forget me - clear the mapping on server and in hubot
 #   rollcall search <entity search terms e.g. owner/project#term> - search for issuses or projects for use in your status update
 #   rollcall working on <status update> - update your status on Rollcall
 #   rollcall post <status update> - alternative syntax for posting a status update
