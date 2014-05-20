@@ -71,49 +71,55 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
 module.exports = (robot) ->
   if process.env.HUBOT_ROLLCALL_WEBHOOK
 
-    robot.hear /^(?:@|\/)?rollcall:?\s+i\s+am\s+(.*)$/i, (msg) ->
-      rollcall_email = msg.match[1]
-      msg.message.user.rollcallAccount = rollcall_email
-      send_command_to_rollcall msg, "map", rollcall_email, (err, response) ->
-        return robot.reply "Error mapping user: #{err.message}" if err?
-        msg.reply "You are #{rollcall_email} on Rollcall."
+    robot.hear /^(?:@|\/)?rollcall:?\s*(who\s+am\s+i|i\s+am|search|working\s+on|post|forget\s+me)?\s+(.*)$/i, (msg) ->
+      user_command = msg.match[1]
+      command_data = msg.match[2]
 
+      actual_command = switch user_command.toLowerCase()
+        when /i\s+am/
+          "map'"
+        when "search"
+          "search"
+        when /forget\s+me/
+          "unmap"
+        when /who\s+am\s+i/
+          user = msg.message.user
+          if user.rollcallAccount
+            msg.reply "You are known as #{user.rollcallAccount} on Rollcall"
+          else
+            msg.reply "I don't know who you are. Tell rollcall who you are."
+          null
+        else # /working\s+on/, "post", no command all are POST ME! :)
+          "post"
 
-    robot.hear /^(?:@|\/)?rollcall:?\s+search\s+(.*)$/i, (msg) ->
-      rollcall_body = msg.match[1]
-      send_command_to_rollcall msg, "search", rollcall_body, (err, response) ->
-        return msg.send "Error searching Rollcall: #{err.message}" if err?
+      return unless actual_command?
 
-        output = null
-        result_count = response.organization?.matching_entities?.length || 0
-        if (result_count == 0)
-          output = "Found 0 results for #{rollcall_body}"
-        else
-          output = "Found #{result_count} results for #{rollcall_body}:\n\n"
-          for entity in response.organization.matching_entities
-            output += "#{entity.name}\n"
+      send_command_to_rollcall msg, actual_command, command_data, (err, response) ->
+        return robot.reply "Rollcall Error: #{err.message}" if err?
 
-        msg.reply output
+        switch actual_command
+          when "map"
+            msg.message.user.rollcallAccount = command_data
+            msg.reply "You are #{command_data} on Rollcall."
+          when "search"
+            output = null
+            result_count = response.organization?.matching_entities?.length || 0
+            if (result_count == 0)
+              output = "Found 0 results for #{rollcall_body}"
+            else
+              output = "Found #{result_count} results for #{rollcall_body}:\n\n"
+              for entity in response.organization.matching_entities
+                output += "#{entity.name}\n"
 
+            msg.reply output
 
-    robot.hear /^(?:@|\/)?rollcall:?\s+working\s+on\s+(.*)$/i, (msg) ->
-      rollcall_body = msg.match[1]
-      send_command_to_rollcall msg, "post", rollcall_body, (err, response) ->
-        return msg.send "Error updating Rollcall: #{err.message}" if err?
-        msg.reply "✓"
+          when "unmap"
+            old_account = msg.message.user.rollcallAccount
+            msg.message.user.rollcallAccount = undefined
+            msg.reply "You are no longer mapped to #{old_account}."
+          when "post"
+            msg.reply "✓"
 
-    robot.hear /^(?:@|\/)?rollcall:?\s+post\s+(.*)$/i, (msg) ->
-      rollcall_body = msg.match[1]
-      send_command_to_rollcall msg, "post", rollcall_body, (err, response) ->
-        return msg.send "Error updating Rollcall: #{err.message}" if err?
-        msg.reply "✓"
-
-    robot.hear /^(?:@|\/)?rollcall:?\s+who\s+am\s+i\s*$/i, (msg) ->
-      user = msg.message.user
-      if user.rollcallAccount
-        msg.reply "You are known as #{user.rollcallAccount} on Rollcall"
-      else
-        msg.reply "I don't know who you are. Tell rollcall who you are."
 
     robot.router.post "/hubot/rollcall", (req, res) ->
 
@@ -129,7 +135,15 @@ module.exports = (robot) ->
 
         payload = req.body
 
-        robot.messageRoom room, "[#{payload.status.organization.domain}] #{payload.status.body} - #{payload.status.user.name}"
+        message = "[#{payload.status.organization.domain}] #{payload.status.body} - #{payload.status.user.name}"
+
+        if payload.status.entities? and payload.status.entities.length > 0
+          message += "\n"
+
+          for entity in payload.status.entities
+            message += "\n#{entity.name} - #{entity.url}"
+
+        robot.messageRoom room, message
 
       catch error
         console.log "rollcall hook error: #{error}. Payload: #{req.body}"
