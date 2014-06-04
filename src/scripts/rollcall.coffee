@@ -9,10 +9,11 @@
 #
 #
 # Commands:
+#   rollcall help - list the available commands
 #   rollcall i am <rollcall email address> - map your user to your Rollcall account (required!)
 #   rollcall who am i - see if Rollcall knows who you are (only checks Hubot, not the server)
 #   rollcall forget me - clear the mapping on server and in hubot
-#   rollcall search <entity search terms e.g. owner/project#term> - search for issuses or projects for use in your status update
+#   rollcall search <entity search terms e.g. owner/project#term> - search for issues or projects for use in your status update
 #   rollcall working on <status update> - update your status on Rollcall
 #   rollcall post <status update> - alternative syntax for posting a status update
 #   rollcall <status update> - alternative, simpler syntax for status updates
@@ -80,7 +81,7 @@ send_command_to_rollcall = (msg, command, matched_data, callback) ->
 module.exports = (robot) ->
   if process.env.HUBOT_ROLLCALL_WEBHOOK
 
-    robot.hear /^(?:@|\/)?rollcall:?\s*(who\s+am|i\s+am|search|working\s+on|post|forget)?\s+(.*)$/i, (msg) ->
+    robot.hear /^(?:@|\/)?rollcall:?\s*(who\s+am|i\s+am|help|search|working\s+on|post|forget)?\s+(.*)$/i, (msg) ->
       # console.log "user_command is #{user_command}"
 
       user_command = msg.match[1]
@@ -93,6 +94,18 @@ module.exports = (robot) ->
       actual_command = switch user_command
         when "i am"
           "map"
+        when "help"
+          help = ""
+          help += "rollcall help - list the available commands"
+          help += "rollcall i am <rollcall email address> - map your user to your Rollcall account (required!)"
+          help += "rollcall who am i - see if Rollcall knows who you are (only checks Hubot, not the server)"
+          help += "rollcall forget me - clear the mapping on server and in hubot"
+          help += "rollcall search <entity search terms e.g. owner/project#term> - search for issues or projects for use in your status update"
+          help += "rollcall working on <status update> - update your status on Rollcall"
+          help += "rollcall post <status update> - alternative syntax for posting a status update"
+          help += "rollcall <status update> - alternative, simpler syntax for status updates"
+
+          msg.reply help
         when "search"
           "search"
         when "forget"
@@ -115,6 +128,8 @@ module.exports = (robot) ->
         return robot.reply "Rollcall Error: #{err.message}" if err?
 
         switch actual_command
+          when "help"
+            msg.reply "helo!"
           when "map"
             msg.reply "You are #{command_data} on Rollcall."
           when "search"
@@ -161,6 +176,3 @@ module.exports = (robot) ->
 
       catch error
         console.log "rollcall hook error: #{error}. Payload: #{req.body}"
-
-
-
